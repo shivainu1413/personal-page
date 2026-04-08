@@ -1,0 +1,15 @@
+{
+  "title": "Personal Page",
+  "subtitle": "A macOS-style portfolio site that pulls itself from GitHub.",
+  "cover": "https://raw.githubusercontent.com/shivainu1413/personal-page/main/public/preview.png",
+  "techStack": ["typescript", "react", "nextjs", "tailwindcss", "framer-motion", "vercel", "github-actions"],
+  "category": "Web App",
+  "status": "active",
+  "featured": true,
+  "order": 1,
+  "highlights": [
+    "Single-window macOS UI with dock navigation and dark/light theme",
+    "Portfolio auto-fetched from any repo tagged with the `portfolio` topic",
+    "SSG + client-side SWR refresh, deployed on Vercel"
+  ]
+}
