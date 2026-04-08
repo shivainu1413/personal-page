@@ -187,7 +187,22 @@ export function aggregateTechSummary(projects: PortfolioProject[]): TechSummary 
   return summary;
 }
 
-// lighter client-side version for SWR (skips portfolio.json parsing to save API calls)
+// fetch portfolio.json directly via raw.githubusercontent.com — works in browser, no auth needed
+async function fetchPortfolioJsonRaw(
+  repoFullName: string,
+  branch: string
+): Promise<ProjectMeta | null> {
+  try {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/${repoFullName}/${branch}/portfolio.json`
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as ProjectMeta;
+  } catch {
+    return null;
+  }
+}
+
 export async function clientFetchPortfolio(): Promise<PortfolioProject[]> {
   const res = await fetch(
     `${GITHUB_API}/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`,
@@ -204,31 +219,36 @@ export async function clientFetchPortfolio(): Promise<PortfolioProject[]> {
   const repos: GitHubRepo[] = await res.json();
   const portfolioRepos = repos.filter((r) => r.topics.includes(PORTFOLIO_TOPIC));
 
-  return portfolioRepos.map((repo) => ({
-    name: repo.name,
-    fullName: repo.full_name,
-    description: repo.description || '',
-    url: repo.html_url,
-    homepage: repo.homepage,
-    stars: repo.stargazers_count,
-    language: repo.language,
-    topics: repo.topics,
-    updatedAt: repo.updated_at,
-    createdAt: repo.created_at,
-    meta: {
-      title: repo.name.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-      subtitle: repo.description || '',
-      cover: `https://raw.githubusercontent.com/${repo.full_name}/${repo.default_branch || 'main'}/cover.png`,
-      techStack: [
-        ...(repo.language ? [repo.language.toLowerCase()] : []),
-        ...repo.topics.filter((t) => t !== PORTFOLIO_TOPIC),
-      ],
-      category: 'Project',
-      status: 'completed' as const,
-      featured: false,
-      order: 99,
-      demoUrl: repo.homepage || undefined,
-      highlights: [],
-    },
+  return Promise.all(portfolioRepos.map(async (repo) => {
+    const branch = repo.default_branch || 'main';
+    const meta = await fetchPortfolioJsonRaw(repo.full_name, branch);
+
+    return {
+      name: repo.name,
+      fullName: repo.full_name,
+      description: repo.description || '',
+      url: repo.html_url,
+      homepage: repo.homepage,
+      stars: repo.stargazers_count,
+      language: repo.language,
+      topics: repo.topics,
+      updatedAt: repo.updated_at,
+      createdAt: repo.created_at,
+      meta: meta || {
+        title: repo.name.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        subtitle: repo.description || '',
+        cover: `https://raw.githubusercontent.com/${repo.full_name}/${branch}/cover.png`,
+        techStack: [
+          ...(repo.language ? [repo.language.toLowerCase()] : []),
+          ...repo.topics.filter((t) => t !== PORTFOLIO_TOPIC),
+        ],
+        category: 'Project',
+        status: 'completed' as const,
+        featured: false,
+        order: 99,
+        demoUrl: repo.homepage || undefined,
+        highlights: [],
+      },
+    };
   }));
 }
