@@ -1,0 +1,27 @@
+# Drop this file into any portfolio repo to trigger a rebuild of personal-page
+# whenever you push to main. Needs a PAT with `repo` scope stored as
+# PORTFOLIO_DISPATCH_TOKEN in the portfolio repo's secrets.
+
+name: Notify Portfolio Site
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PORTFOLIO_DISPATCH_TOKEN }}
+          repository: shivainu1413/personal-page
+          event-type: portfolio-update
+          client-payload: |
+            {
+              "repo": "${{ github.repository }}",
+              "ref": "${{ github.ref }}",
+              "sha": "${{ github.sha }}"
+            }

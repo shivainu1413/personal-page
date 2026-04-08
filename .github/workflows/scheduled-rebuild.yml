@@ -1,0 +1,23 @@
+name: Scheduled Portfolio Rebuild
+
+# Daily redeploy so the portfolio picks up new repos / topic changes
+# even when nothing has been pushed to this repo.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # 06:00 UTC daily (14:00 Taiwan)
+  repository_dispatch:
+    types: [portfolio-update]
+  workflow_dispatch:
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        run: |
+          curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}" \
+            -H "Content-Type: application/json"
+
+      - name: Log
+        run: echo "Triggered by ${{ github.event_name }} at $(date -u)"

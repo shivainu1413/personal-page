@@ -1,0 +1,15 @@
+{
+  "title": "Project Name",
+  "subtitle": "A brief one-line description",
+  "cover": "https://raw.githubusercontent.com/shivainu1413/REPO_NAME/main/cover.png",
+  "techStack": ["python", "fastapi", "docker"],
+  "category": "Web App",
+  "status": "active",
+  "featured": false,
+  "order": 99,
+  "demoUrl": "",
+  "highlights": [
+    "Highlight 1",
+    "Highlight 2"
+  ]
+}
